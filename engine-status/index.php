@@ -52,12 +52,9 @@ $centreon = $_SESSION['centreon'];
 $widgetId = filter_var($_REQUEST['widgetId'], FILTER_VALIDATE_INT);
 
 try {
-<<<<<<< HEAD
-=======
     if ($widgetId === false) {
         throw new \InvalidArgumentException('Widget ID must be an integer');
     }
->>>>>>> fbd75cc... fix(widget): Sanitize WidgetID and refactor SQL Queries using PDO prepare/exec (#27)
 
     $db_centreon = $dependencyInjector['configuration_db'];
     $db = $dependencyInjector['realtime_db'];
@@ -92,66 +89,6 @@ $dataSth = array();
 $dataSts = array();
 $db = new CentreonDB("centstorage");
 
-<<<<<<< HEAD
-$queryName = "Select T1.name, T1.instance_id as instance, T2.instance_id
-             FROM instances T1, hosts T2
-             WHERE T1.name like '".$preferences['poller']."';";
-
-$res = $db->query($queryName);
-$idP = 0;
-
-while ($row = $res->fetchRow()) {
-  $idP = $row['instance'];
-}
-
-$queryLat = "Select Max(T1.latency) as h_max, AVG(T1.latency) as h_moy, Max(T2.latency) as s_max, AVG(T2.latency) as s_moy 
-             from hosts T1, services T2  
-             where T1.instance_id = ".$idP." and T1.host_id = T2.host_id and T2.enabled = '1';";
-
-$res = $db->query($queryLat);
-while ($row = $res->fetchRow()) {
-  $row['h_max'] = round($row['h_max'], 3);
-  $row['h_moy'] = round($row['h_moy'], 3);
-  $row['s_max'] = round($row['s_max'], 3);
-  $row['s_moy'] = round($row['s_moy'], 3);
-  $dataLat[] = $row;
-}
-
-$queryEx = "Select Max(T1.execution_time) as h_max, AVG(T1.execution_time) as h_moy, Max(T2.execution_time) as s_max, AVG(T2.execution_time) as s_moy 
-            from hosts T1, services T2  
-            where T1.instance_id = ".$idP." and T1.host_id = T2.host_id and T2.enabled = '1';";
-
-$res = $db->query($queryEx);
-while ($row = $res->fetchRow()) {
-  $row['h_max'] = round($row['h_max'], 3);
-  $row['h_moy'] = round($row['h_moy'], 3);
-  $row['s_max'] = round($row['s_max'], 3);
-  $row['s_moy'] = round($row['s_moy'], 3);
-  $dataEx[] = $row;
-}
-
-$querySth = "Select SUM(CASE WHEN h.state = 1 and h.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Dow,
-                   SUM(CASE WHEN h.state = 2 and h.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Un,
-                   SUM(CASE WHEN h.state = 0 and h.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Up,
-                   SUM(CASE WHEN h.state = 4 and h.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Pend
-            From hosts h where h.instance_id = ".$idP.";";
-
-$querySts = "Select SUM(CASE WHEN s.state = 2 and s.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Cri,
-                    SUM(CASE WHEN s.state = 1 and s.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Wa, 
-                    SUM(CASE WHEN s.state = 0 and s.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Ok,
-                    SUM(CASE WHEN s.state = 4 and s.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Pend, 
-                    SUM(CASE WHEN s.state = 3 and s.enabled = 1 and h.name not like '%Module%' then 1 else 0 end) as Unk
-             From services s, hosts h where h.host_id = s.host_id and h.instance_id = ".$idP.";";
-
-$res = $db->query($querySth);
-while ($row = $res->fetchRow()) {
-  $dataSth[] = $row;
-}
-
-$res = $db->query($querySts);
-while ($row = $res->fetchRow()) {
-  $dataSts[] = $row;
-=======
 $idP = (int) $preferences['poller'];
 
 $sql = "SELECT
@@ -221,7 +158,6 @@ $res->bindValue(':idP', $idP, PDO::PARAM_INT);
 $res->execute();
 while ($row = $res->fetch()) {
     $dataSts[] = $row;
->>>>>>> fbd75cc... fix(widget): Sanitize WidgetID and refactor SQL Queries using PDO prepare/exec (#27)
 }
 
 $avg_l = $preferences['avg-l'];
