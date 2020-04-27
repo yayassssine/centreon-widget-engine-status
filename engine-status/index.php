@@ -68,10 +68,6 @@ try {
     $widgetObj = new CentreonWidget($centreon, $db_centreon);
     $preferences = $widgetObj->getWidgetPreferences($widgetId);
 
-    if (empty($preferences['poller'])) {
-        throw new \InvalidArgumentException('Pollers preferences can\'t be empty');
-    }
-
     $autoRefresh = 0;
     $autoRefresh = $preferences['autoRefresh'];
 } catch (Exception $e) {
