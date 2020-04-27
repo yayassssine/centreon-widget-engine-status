@@ -68,7 +68,7 @@ try {
     $widgetObj = new CentreonWidget($centreon, $db_centreon);
     $preferences = $widgetObj->getWidgetPreferences($widgetId);
 
-    if (empty($preferences['poller'] || (int) $preferences['poller'] === 0)) {
+    if (empty($preferences['poller'])) {
         throw new \InvalidArgumentException('Pollers preferences can\'t be empty');
     }
 
@@ -89,7 +89,16 @@ $dataSth = array();
 $dataSts = array();
 $db = new CentreonDB("centstorage");
 
-$idP = (int) $preferences['poller'];
+$queryName = "Select T1.name, T1.instance_id as instance, T2.instance_id
+             FROM instances T1, hosts T2
+             WHERE T1.name like '".$preferences['poller']."';";
+
+$res = $db->query($queryName);
+$idP = 0;
+
+while ($row = $res->fetchRow()) {
+  $idP = $row['instance'];
+}
 
 $sql = "SELECT
     Max(T1.latency) as h_max,
