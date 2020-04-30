@@ -1,7 +1,8 @@
 <?php
-/**
- * Copyright 2005-2011 MERETHIS
- * Centreon is developped by : Julien Mathis and Romain Le Merlus under
+
+/*
+ * Copyright 2005-2020 Centreon
+ * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -19,11 +20,11 @@
  * combined work based on this program. Thus, the terms and conditions of the GNU
  * General Public License cover the whole combination.
  *
- * As a special exception, the copyright holders of this program give MERETHIS
+ * As a special exception, the copyright holders of this program give Centreon
  * permission to link this program with independent modules to produce an executable,
  * regardless of the license terms of these independent modules, and to copy and
- * distribute the resulting executable under terms of MERETHIS choice, provided that
- * MERETHIS also meet, for each linked independent module, the terms  and conditions
+ * distribute the resulting executable under terms of Centreon choice, provided that
+ * Centreon also meet, for each linked independent module, the terms  and conditions
  * of the license of that module. An independent module is a module which is not
  * derived from this program. If you modify this program, you may extend this
  * exception to your version of the program, but you are not obliged to do so. If you
@@ -68,16 +69,18 @@ try {
     $widgetObj = new CentreonWidget($centreon, $db_centreon);
     $preferences = $widgetObj->getWidgetPreferences($widgetId);
 
-    $autoRefresh = 0;
-    $autoRefresh = $preferences['autoRefresh'];
-} catch (Exception $e) {
+    $autoRefresh = filter_var($preferences['autoRefresh'], FILTER_VALIDATE_INT);
+    if ($autoRefresh === false || $autoRefresh < 5) {
+        $autoRefresh = 30;
+    }
+} catch (InvalidArgumentException $e) {
     echo $e->getMessage() . "<br/>";
     exit;
 }
 
-$path = $centreon_path . "www/widgets/engine-status/src/";
+$path = $centreon_path . 'www/widgets/engine-status/src/';
 $template = new Smarty();
-$template = initSmartyTplForPopup($path, $template, "./", $centreon_path);
+$template = initSmartyTplForPopup($path, $template, './', $centreon_path);
 
 $dataLat = array();
 $dataEx = array();
@@ -105,7 +108,7 @@ $sql = "SELECT
     WHERE T1.instance_id = :idP AND T1.host_id = T2.host_id AND T2.enabled = '1' and T2.check_type = '0'";
 
 $res = $db->prepare($sql);
-$res->bindValue(':idP', $idP, PDO::PARAM_INT);
+$res->bindValue(':idP', $idP, \PDO::PARAM_INT);
 $res->execute();
 while ($row = $res->fetch()) {
     $row['h_max'] = round($row['h_max'], 3);
@@ -124,7 +127,7 @@ $sql = "SELECT
     WHERE T1.instance_id = :idP AND T1.host_id = T2.host_id AND T2.enabled = '1' and T2.check_type = '0'";
 
 $res = $db->prepare($sql);
-$res->bindValue(':idP', $idP, PDO::PARAM_INT);
+$res->bindValue(':idP', $idP, \PDO::PARAM_INT);
 $res->execute();
 while ($row = $res->fetch()) {
     $row['h_max'] = round($row['h_max'], 3);
@@ -143,7 +146,7 @@ $sql = "SELECT
     WHERE h.instance_id = :idP";
 
 $res = $db->prepare($sql);
-$res->bindValue(':idP', $idP, PDO::PARAM_INT);
+$res->bindValue(':idP', $idP, \PDO::PARAM_INT);
 $res->execute();
 while ($row = $res->fetch()) {
     $dataSth[] = $row;
@@ -159,7 +162,7 @@ $sql = "SELECT
     WHERE h.host_id = s.host_id AND h.instance_id = :idP";
 
 $res = $db->prepare($sql);
-$res->bindValue(':idP', $idP, PDO::PARAM_INT);
+$res->bindValue(':idP', $idP, \PDO::PARAM_INT);
 $res->execute();
 while ($row = $res->fetch()) {
     $dataSts[] = $row;
