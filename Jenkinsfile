@@ -75,41 +75,10 @@ stage('Deliver sources') {
 }
 
 try {
-  stage('Unit tests // RPMs packaging // Sonar analysis') {
-    parallel 'unit tests backend centos7': {
+  stage('RPMs packaging // Sonar analysis') {
+    parallel 'Sonar analysis': {
       node {
         checkoutCentreonBuild(buildBranch)
-        sh "./centreon-build/jobs/widgets/${serie}/widget-unittest.sh centos7"
-        if (currentBuild.result == 'UNSTABLE')
-          currentBuild.result = 'FAILURE'
-
-        if (env.CHANGE_ID) { // pull request to comment with coding style issues
-          ViolationsToGitHub([
-            repositoryName: 'centreon-widget-engine-status',
-            pullRequestId: env.CHANGE_ID,
-
-            createSingleFileComments: true,
-            commentOnlyChangedContent: true,
-            commentOnlyChangedFiles: true,
-            keepOldComments: false,
-
-            commentTemplate: "**{{violation.severity}}**: {{violation.message}}",
-
-            violationConfigs: [
-              [parser: 'CHECKSTYLE', pattern: '.*/codestyle-be.xml$', reporter: 'Checkstyle']
-            ]
-          ])
-        }
-
-        discoverGitReferenceBuild()
-        recordIssues(
-          enabledForFailure: true,
-          failOnError: true,
-          qualityGates: [[threshold: 1, type: 'DELTA', unstable: false]],
-          tool: phpCodeSniffer(id: 'phpcs', name: 'phpcs', pattern: 'codestyle-be.xml'),
-          trendChartType: 'NONE'
-        )
-
         // Run sonarQube analysis
         withSonarQubeEnv('SonarQubeDev') {
           sh "./centreon-build/jobs/widgets/${serie}/widget-analysis.sh"
@@ -135,7 +104,7 @@ try {
         sh "./centreon-build/jobs/widgets/${serie}/widget-package.sh centos8"
         archiveArtifacts artifacts: 'rpms-centos8.tar.gz'
         stash name: "rpms-centos8", includes: 'output/noarch/*.rpm'
-        sh 'rm -rf output'      
+        sh 'rm -rf output'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
